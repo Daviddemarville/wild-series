@@ -9,16 +9,6 @@ import "../database/checkConnection";
 // Import the Express application from ./app
 import app from "./app";
 
-// Add GET / route to respond with a welcome message
-import type { RequestHandler } from "express";
-
-const sayWelcome: RequestHandler = (req, res) => {
-  res.send("Welcome to Wild Series !");
-};
-
-// Attach the route
-app.get("/", sayWelcome);
-
 // Get the port from the environment variables
 const port = process.env.APP_PORT;
 
