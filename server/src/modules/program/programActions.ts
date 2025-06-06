@@ -1,32 +1,7 @@
 // Import access to data
 import programRepository from "./programRepository";
 
-// Some data to make the trick
-
-const programs = [
-  {
-    id: 1,
-    title: "The Good Place",
-    synopsis:
-      "À sa mort, Eleanor Shellstrop est envoyée au Bon Endroit, un paradis fantaisiste réservé aux individus exceptionnellement bienveillants. Or Eleanor n'est pas exactement une « bonne personne » et comprend vite qu'il y a eu erreur sur la personne. Avec l'aide de Chidi, sa prétendue âme sœur dans l'au-delà, la jeune femme est bien décidée à se redécouvrir.",
-    poster:
-      "https://img.betaseries.com/JwRqyGD3f9KvO_OlfIXHZUA3Ypw=/600x900/smart/https%3A%2F%2Fpictures.betaseries.com%2Ffonds%2Fposter%2F94857341d71c795c69b9e5b23c4bf3e7.jpg",
-    country: "USA",
-    year: 2016,
-  },
-  {
-    id: 2,
-    title: "Dark",
-    synopsis:
-      "Quatre familles affolées par la disparition d'un enfant cherchent des réponses et tombent sur un mystère impliquant trois générations qui finit de les déstabiliser.",
-    poster:
-      "https://img.betaseries.com/zDxfeFudy3HWjxa6J8QIED9iaVw=/600x900/smart/https%3A%2F%2Fpictures.betaseries.com%2Ffonds%2Fposter%2Fc47135385da176a87d0dd9177c5f6a41.jpg",
-    country: "Allemagne",
-    year: 2017,
-  },
-];
-
-// Declare the action
+// Declare the actions
 
 import type { RequestHandler } from "express";
 
@@ -36,12 +11,9 @@ const browse: RequestHandler = async (req, res) => {
   res.json(programsFromDB);
 };
 
-//*****************************************************
-
-const read: RequestHandler = (req, res) => {
+const read: RequestHandler = async (req, res) => {
   const parsedId = Number.parseInt(req.params.id);
-
-  const program = programs.find((p) => p.id === parsedId);
+  const program = await programRepository.readById(parsedId);
 
   if (program != null) {
     res.json(program);
@@ -50,6 +22,53 @@ const read: RequestHandler = (req, res) => {
   }
 };
 
+const add: RequestHandler = async (req, res) => {
+  const { title, synopsis, poster, country, year, category_id } = req.body;
+
+  const insertedId = await programRepository.create({
+    title,
+    synopsis,
+    poster,
+    country,
+    year,
+    category_id,
+  });
+
+  res.status(201).json({ id: insertedId });
+};
+
+const edit: RequestHandler = async (req, res) => {
+  const id = Number.parseInt(req.params.id);
+  const { title, synopsis, poster, country, year, category_id } = req.body;
+
+  const updated = await programRepository.update(id, {
+    title,
+    synopsis,
+    poster,
+    country,
+    year,
+    category_id,
+  });
+
+  if (updated) {
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(404);
+  }
+};
+
+const destroy: RequestHandler = async (req, res) => {
+  const id = Number.parseInt(req.params.id);
+
+  const deleted = await programRepository.delete(id);
+
+  if (deleted) {
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(404);
+  }
+};
+
 // Export them to import them somewhere else
 
-export default { browse, read };
+export default { browse, read, add, edit, destroy };
